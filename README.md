@@ -32,3 +32,8 @@ $ chmod +x /bin/chatgpt-cli
 ```bash
 $ chatgpt-cli
 ```
+
+It will ask you which mode you want to use (Chat, Q/A, etc.), select an option by typing a number.
+
+This version supports multi-line input. To end a query, press the Escape key followed by Enter,
+or just press Alt-Enter.

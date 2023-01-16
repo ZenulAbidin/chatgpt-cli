@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/home/hsherief/Documents/omegabuild/bin/python3.8
 import openai
 import os
 import termcolor
@@ -12,7 +12,7 @@ presets = {
         "inject": {
             "state": True,
             "start": "AI:",
-            "end": "Human:"
+            "end": "Human: "
         },
     },
     "Q&A": {
@@ -20,7 +20,7 @@ presets = {
         "inject": {
             "state": True,
             "start": "A:",
-            "end": "Q:"
+            "end": "Q: "
         },
     },
     "Grammar Correction": {
@@ -43,7 +43,7 @@ presets = {
     }
 }
 def api_key_helper():
-    return [('class:api-key-helper', 'Set the environment variable OPENAI_API_KEY to avoid further prompts. ')]
+    return [('class:api-key-helper', 'Set the environment variable OPENAI_API_KEY or place it in ~/.config/gptchat.conf to avoid further prompts. ')]
 
 def chat_prompt_helper(on, message):
         return [('class:chat-prompt-helper', "Mode: "+on+"\n"+message)]
@@ -56,6 +56,8 @@ style = Style.from_dict({
 def check_api_key_validity(api_key, where):
     if(where == "prompt"):
         print("Found env variable OPENAI_API_KEY")
+    elif(where == "config"):
+        print("Found config file ~/.config/gptchat.conf")
     print("Checking for validity")
     try:
         openai.api_key = api_key
@@ -68,12 +70,18 @@ def check_api_key_validity(api_key, where):
 api_key = os.environ.get("OPENAI_API_KEY")
 
 if not api_key:
+    # try config file
     try:
-        api_key = prompt("Please enter your OpenAI API key: ", bottom_toolbar=api_key_helper, style=style)
-        check_api_key_validity(api_key, "not-prompt")
-    except KeyboardInterrupt:
-        print("Exiting...")
-        exit(0)
+        with open('{}/.config/gptchat.conf'.format(os.path.expanduser("~"), 'r')) as file:
+            api_key = file.readline().strip();
+            check_api_key_validity(api_key, "config")
+    except Exception:
+        try:
+            api_key = prompt("Please enter your OpenAI API key: ", bottom_toolbar=api_key_helper, style=style)
+            check_api_key_validity(api_key, "not-prompt")
+        except KeyboardInterrupt:
+            print("Exiting...")
+            exit(0)
 else:
     check_api_key_validity(api_key, "prompt")
 
@@ -133,7 +141,7 @@ try:
     # start chat loop
     while True:
         # get user input
-        user_input = prompt(end_string, bottom_toolbar=chat_prompt_helper(chosen_preset, presets[chosen_preset]["message"]), style=style)
+        user_input = prompt(end_string, bottom_toolbar=chat_prompt_helper(chosen_preset, presets[chosen_preset]["message"]), style=style, multiline=True)
 
         if user_input.lower() in ["exitgpt","exit"]:
             break
@@ -149,7 +157,7 @@ try:
         else:
             conversation_history = presets[chosen_preset]["message"]
         # print response with termcolor
-        print(termcolor.colored(f"{start_string}{response.choices[0].text}", 'light_yellow'))
+        print(termcolor.colored(f"{start_string}{response.choices[0].text}", 'blue'))
 
 except KeyboardInterrupt:
     print("Exiting...")

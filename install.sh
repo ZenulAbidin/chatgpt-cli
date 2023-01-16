@@ -4,7 +4,7 @@
 pip install -r requirements.txt
 
 # Copy script to /bin
-sudo cp ./chatgpt-cli.py /bin/chatgpt-cli
+sudo cp ./chatgpt-cli.py /usr/local/bin/gptchat
 
 # Make script executable
-sudo chmod +x /bin/chatgpt-cli
+sudo chmod +x /usr/local/bin/gptchat
