@@ -1,4 +1,4 @@
-#!/home/hsherief/Documents/omegabuild/bin/python3.8
+#!/usr/bin/python3
 import openai
 import os
 import termcolor
