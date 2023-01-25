@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import openai
+from openai.error import InvalidRequestError, ServiceUnavailableError, RateLimitError
 import os
 import termcolor
 from prompt_toolkit import prompt
@@ -65,6 +66,9 @@ def check_api_key_validity(api_key, where):
         print(termcolor.colored(f"API key is valid", 'light_green', attrs=["bold"]))
     except openai.OpenAIError as e:
         print(termcolor.colored(f"Invalid API key", 'light_red', attrs=["bold"]) + "\nGrab your API key from: "+termcolor.colored(f"https://beta.openai.com/account/api-keys", 'light_blue', attrs=["underline"]))
+        exit()
+    except Exception:
+        print(termcolor.colored(f"An unknown error occurred", 'light_red', attrs=["bold"]) + "\nMake sure you're connected to the internet and try again.");
         exit()
 # import api key
 api_key = os.environ.get("OPENAI_API_KEY")
@@ -146,18 +150,25 @@ try:
         if user_input.lower() in ["exitgpt","exit"]:
             break
         # generate response
-        response = openai.Completion.create(
-            engine=model,
-            prompt=conversation_history + end_string + user_input + "\n" + start_string,
-            temperature=temperature,
-            max_tokens=1024,
-        )
-        if (state):
-            conversation_history += end_string + user_input + "\n" + response.choices[0].text + "\n"
-        else:
-            conversation_history = presets[chosen_preset]["message"]
-        # print response with termcolor
-        print(termcolor.colored(f"{start_string}{response.choices[0].text}", 'blue'))
+        try:
+            response = openai.Completion.create(
+                engine=model,
+                prompt=conversation_history + end_string + user_input + "\n" + start_string,
+                temperature=temperature,
+                max_tokens=1024,
+            )
+            if (state):
+                conversation_history += end_string + user_input + "\n" + response.choices[0].text + "\n"
+            else:
+                conversation_history = presets[chosen_preset]["message"]
+            # print response with termcolor
+            print(termcolor.colored(f"{start_string}{response.choices[0].text}", 'light_blue', attrs=["bold"]))
+        except InvalidRequestError as e:
+            print(termcolor.colored(f"Invalid Request: {e._message}", 'light_red', attrs=["bold"]))
+        except ServiceUnavailableError as e:
+            print(termcolor.colored(f"Service Unavailable: {e._message}", 'light_red', attrs=["bold"]))
+        except RateLimitError as e:
+            print(termcolor.colored(f"Service is overloaded: {e._message}", 'light_red', attrs=["bold"]))
 
 except KeyboardInterrupt:
     print("Exiting...")
